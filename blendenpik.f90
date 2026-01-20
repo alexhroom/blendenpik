@@ -1,10 +1,15 @@
 ! Blendenpik sketch-and-precondition algorithm.
+program blendenpik
+
+end program blendenpik
+
 
 module blendenpik_module
-  implicit none (type)
+  implicit none (type, external)
 
-  external dfftw_plan_r2r_1d, dfftw_execute_dft, dfftw_destroy_plan, FFTW_REDFT10, FFTW_ESTIMATE
-  external dgeqrf, dgels, dtrtrs
+  include 'fftw/api/fftw3.f'
+
+  external dgeqrf, dgels, dtrtrs, dfftw_plan_r2r_1d, dfftw_execute_r2r, dfftw_destroy_plan
 
   private
   public :: blendenpik
@@ -48,10 +53,10 @@ contains
     ! apply discrete cosine transform to each column of DA using fftw
     call dfftw_plan_r2r_1d(plan, m, DCT_M(:, 1), DCT_M(:, 1), FFTW_REDFT10, FFTW_ESTIMATE)
     do i = 1, n
-      call dfftw_execute_dft(plan, DCT_M(:, i), DCT_M(:, i))
+      call dfftw_execute_r2r(plan, DCT_M(:, i), DCT_M(:, i))
     end do 
     call dfftw_destroy_plan(plan)
-    
+
     ! sketch by selecting s random rows of M
     call random_number(harvest)
     row_indices = mod(int(row_indices * m), m) + 1
